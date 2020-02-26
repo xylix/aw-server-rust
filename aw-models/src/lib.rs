@@ -1,9 +1,9 @@
 extern crate serde;
-#[macro_use] extern crate serde_json;
+extern crate serde_json;
 #[macro_use] extern crate serde_derive;
 extern crate chrono;
 #[macro_use] extern crate log;
-
+extern crate schemars;
 // TODO: Move me to an appropriate place
 #[macro_export]
 macro_rules! json_map {

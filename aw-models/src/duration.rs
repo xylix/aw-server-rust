@@ -20,3 +20,18 @@ impl From<DurationSerialization> for chrono::Duration {
         chrono::Duration::nanoseconds((def.0*1000000000.0) as i64)
     }
 }
+
+use schemars::JsonSchema;
+use schemars::gen::SchemaGenerator;
+use schemars::schema::{InstanceType, Schema, SchemaObject};
+
+impl JsonSchema for DurationSerialization  {
+    fn schema_name() -> String { "Duration".to_owned() }
+    fn json_schema(_: &mut SchemaGenerator) -> Schema {
+        SchemaObject {
+            instance_type: Some(InstanceType::String.into()),
+            ..Default::default()
+        }
+        .into()
+    }
+}

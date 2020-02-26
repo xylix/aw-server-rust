@@ -12,6 +12,8 @@ use uuid::Uuid;
 use crate::dirs;
 use crate::config::AWConfig;
 
+use rocket_okapi::swagger_ui::make_swagger_ui;
+
 #[macro_export]
 macro_rules! endpoints_get_lock {
     ( $lock:expr ) => {
@@ -39,31 +41,37 @@ pub struct ServerState {
     pub asset_path: PathBuf,
 }
 
+#[openapi]
 #[get("/")]
 fn root_index(state: State<ServerState>) -> Option<NamedFile> {
     NamedFile::open(state.asset_path.join("index.html")).ok()
 }
 
+#[openapi]
 #[get("/css/<file..>")]
 fn root_css(file: PathBuf, state: State<ServerState>) -> Option<NamedFile> {
     NamedFile::open(state.asset_path.join("css").join(file)).ok()
 }
 
+#[openapi]
 #[get("/fonts/<file..>")]
 fn root_fonts(file: PathBuf, state: State<ServerState>) -> Option<NamedFile> {
     NamedFile::open(state.asset_path.join("fonts").join(file)).ok()
 }
 
+#[openapi]
 #[get("/js/<file..>")]
 fn root_js(file: PathBuf, state: State<ServerState>) -> Option<NamedFile> {
     NamedFile::open(state.asset_path.join("js").join(file)).ok()
 }
 
+#[openapi]
 #[get("/static/<file..>")]
 fn root_static(file: PathBuf, state: State<ServerState>) -> Option<NamedFile> {
     NamedFile::open(state.asset_path.join("static").join(file)).ok()
 }
 
+#[openapi]
 #[get("/favicon.ico")]
 fn root_favicon(state: State<ServerState>) -> Option<NamedFile> {
     NamedFile::open(state.asset_path.join("favicon.ico")).ok()
@@ -85,7 +93,7 @@ fn get_device_id() -> String {
         uuid
     }
 }
-
+#[openapi]
 #[get("/")]
 fn server_info() -> JsonValue {
     let testing : bool;

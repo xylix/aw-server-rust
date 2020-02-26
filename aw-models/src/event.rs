@@ -1,12 +1,13 @@
 use serde_json::Value;
 use serde_json::Map;
 use chrono::DateTime;
-use chrono::Utc;
+use chrono::prelude::Utc;
 use chrono::Duration;
+use schemars::JsonSchema;
 
 use crate::duration::DurationSerialization;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, JsonSchema, Clone, Debug)]
 pub struct Event {
     pub id: Option<i64>,
     pub timestamp: DateTime<Utc>,
