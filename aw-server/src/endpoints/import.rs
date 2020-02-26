@@ -3,6 +3,8 @@ use rocket::Data;
 use rocket::http::Status;
 use rocket::http::ContentType;
 use rocket_contrib::json::Json;
+use rocket_okapi::openapi;
+use rocket_okapi::request::OpenApiFromData;
 
 use multipart::server::Multipart;
 
@@ -29,6 +31,8 @@ fn import(datastore_mutex: &Mutex<Datastore>, import: BucketsExport) -> Result<(
     Ok(())
 }
 
+
+#[openapi]
 #[post("/", data = "<json_data>", format = "application/json")]
 pub fn bucket_import_json(state: State<ServerState>, json_data: Json<BucketsExport>) -> Result<(), Status> {
     import(&state.datastore, json_data.into_inner())
@@ -36,6 +40,7 @@ pub fn bucket_import_json(state: State<ServerState>, json_data: Json<BucketsExpo
 
 // FIXME: This eats a lot of RAM (double the amount of the size of the file imported)
 // In Rocket 0.5 this will likely be improved when native multipart support is added
+#[openapi]
 #[post("/", data = "<data>", format = "multipart/form-data")]
 pub fn bucket_import_form(state: State<ServerState>, cont_type: &ContentType, data: Data) -> Result<(), Status> {
     let (_, boundary) = cont_type.params().find(|&(k, _)| k == "boundary").ok_or_else( || {

@@ -12,8 +12,8 @@ use uuid::Uuid;
 use crate::dirs;
 use crate::config::AWConfig;
 
-use crate::rocket_okapi::openapi;
-use rocket_okapi::swagger_ui::make_swagger_ui;
+use rocket_okapi::openapi;
+use rocket_okapi::swagger_ui::{ make_swagger_ui, SwaggerUIConfig };
 
 #[macro_export]
 macro_rules! endpoints_get_lock {
@@ -140,28 +140,29 @@ fn not_found() -> JsonValue {
 pub fn build_rocket(server_state: ServerState, config: &AWConfig) -> rocket::Rocket {
     info!("Starting aw-server-rust at {}:{}", config.address, config.port);
     rocket::custom(config.to_rocket_config())
-        .mount("/", routes![
+        .mount("/", routes_with_openapi![
                root_index, root_favicon,
                root_fonts, root_css, root_js, root_static,
         ])
-        .mount("/api/0/info", routes![server_info])
-        .mount("/api/0/buckets", routes![
+        .mount("/swagger-ui", make_swagger_ui(&SwaggerUIConfig { url: Some("/openapi.json".to_owned()), urls: None, }))
+        .mount("/api/0/info", routes_with_openapi![server_info])
+        .mount("/api/0/buckets", routes_with_openapi![
                bucket::bucket_new, bucket::bucket_delete, bucket::buckets_get, bucket::bucket_get,
                bucket::bucket_events_get, bucket::bucket_events_create, bucket::bucket_events_heartbeat, bucket::bucket_event_count,
                bucket::bucket_events_delete_by_id,
                bucket::bucket_export
         ])
-        .mount("/api/0/query", routes![
+        .mount("/api/0/query", routes_with_openapi![
                query::query
         ])
-        .mount("/api/0/import", routes![
+        .mount("/api/0/import", routes_with_openapi![
                import::bucket_import_json,
                import::bucket_import_form
         ])
-        .mount("/api/0/export", routes![
+        .mount("/api/0/export", routes_with_openapi![
                export::buckets_export
         ])
-        .mount("/api/0/settings", routes![
+        .mount("/api/0/settings", routes_with_openapi![
             settings::setting_get, settings::settings_list_get, settings::setting_set, settings::setting_delete
         ])
         .attach(cors::cors(&config))

@@ -2,6 +2,7 @@ use rocket::State;
 use rocket::http::Status;
 use rocket::response::status;
 use rocket_contrib::json::{Json, JsonValue};
+use rocket_okapi::openapi;
 
 use aw_models::Query;
 
@@ -31,6 +32,7 @@ fn error(err: QueryError) -> status::Custom<JsonValue> {
     status::Custom(Status::InternalServerError, json!(body))
 }
 
+#[openapi]
 #[post("/", data = "<query_req>")]
 pub fn query(query_req: Json<Query>, state: State<ServerState>) -> status::Custom<JsonValue> {
     let query_code = query_req.0.query.join("\n");

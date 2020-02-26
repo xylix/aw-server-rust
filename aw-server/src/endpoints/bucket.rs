@@ -15,11 +15,13 @@ use rocket::response::status;
 use rocket::response::Response;
 use rocket::http::Header;
 use rocket::http::Status;
+use rocket_okapi::openapi;
 
 use crate::endpoints::ServerState;
 
 use aw_datastore::DatastoreError;
 
+#[openapi]
 #[get("/")]
 pub fn buckets_get(state: State<ServerState>) -> Result<Json<HashMap<String, Bucket>>, Status> {
     let datastore = endpoints_get_lock!(state.datastore);
@@ -34,6 +36,7 @@ pub fn buckets_get(state: State<ServerState>) -> Result<Json<HashMap<String, Buc
     }
 }
 
+#[openapi]
 #[get("/<bucket_id>")]
 pub fn bucket_get(bucket_id: String, state: State<ServerState>) -> Result<Json<Bucket>, Status> {
     let datastore = endpoints_get_lock!(state.datastore);
@@ -52,6 +55,7 @@ pub fn bucket_get(bucket_id: String, state: State<ServerState>) -> Result<Json<B
 // FIXME: The status::Custom return is used because if we simply used Status and return a
 // Status::NotModified rocket will for some unknown reason consider that to be a
 // "Invalid status used as responder" and converts it to a 500 which we do not want.
+#[openapi]
 #[post("/<bucket_id>", data = "<message>")]
 pub fn bucket_new(bucket_id: String, message: Json<Bucket>, state: State<ServerState>) -> status::Custom<()> {
     let mut bucket = message.into_inner();
@@ -80,6 +84,7 @@ pub fn bucket_new(bucket_id: String, message: Json<Bucket>, state: State<ServerS
     }
 }
 
+#[openapi]
 #[get("/<bucket_id>/events?<start>&<end>&<limit>")]
 pub fn bucket_events_get(bucket_id: String, start: Option<String>, end: Option<String>, limit: Option<u64>, state: State<ServerState>) -> Result<Json<Vec<Event>>, Status> {
     let starttime : Option<DateTime<Utc>> = match start {
@@ -120,6 +125,7 @@ pub fn bucket_events_get(bucket_id: String, start: Option<String>, end: Option<S
     }
 }
 
+#[openapi]
 #[post("/<bucket_id>/events", data = "<events>")]
 pub fn bucket_events_create(bucket_id: String, events: Json<Vec<Event>>, state: State<ServerState>) -> Result<Json<Vec<Event>>, Status> {
     let datastore = endpoints_get_lock!(state.datastore);
@@ -136,6 +142,7 @@ pub fn bucket_events_create(bucket_id: String, events: Json<Vec<Event>>, state: 
     }
 }
 
+#[openapi]
 #[post("/<bucket_id>/heartbeat?<pulsetime>", data = "<heartbeat_json>")]
 pub fn bucket_events_heartbeat(bucket_id: String, heartbeat_json: Json<Event>, pulsetime: f64, state: State<ServerState>) -> Result<Json<Event>, Status> {
     let heartbeat = heartbeat_json.into_inner();
@@ -152,6 +159,7 @@ pub fn bucket_events_heartbeat(bucket_id: String, heartbeat_json: Json<Event>, p
     }
 }
 
+#[openapi]
 #[get("/<bucket_id>/events/count")]
 pub fn bucket_event_count(bucket_id: String, state: State<ServerState>) -> Result<Json<u64>, Status> {
     let datastore = endpoints_get_lock!(state.datastore);
@@ -168,6 +176,7 @@ pub fn bucket_event_count(bucket_id: String, state: State<ServerState>) -> Resul
     }
 }
 
+#[openapi]
 #[delete("/<bucket_id>/events/<event_id>")]
 pub fn bucket_events_delete_by_id(bucket_id: String, event_id: i64, state: State<ServerState>) -> Result<(), Status> {
     let datastore = endpoints_get_lock!(state.datastore);
@@ -183,6 +192,7 @@ pub fn bucket_events_delete_by_id(bucket_id: String, event_id: i64, state: State
     }
 }
 
+#[openapi]
 #[get("/<bucket_id>/export")]
 pub fn bucket_export(bucket_id: String, state: State<ServerState>) -> Result<Response, Status> {
     let datastore = endpoints_get_lock!(state.datastore);
@@ -212,6 +222,7 @@ pub fn bucket_export(bucket_id: String, state: State<ServerState>) -> Result<Res
     return Ok(response);
 }
 
+#[openapi]
 #[delete("/<bucket_id>")]
 pub fn bucket_delete(bucket_id: String, state: State<ServerState>) -> Result<(), Status> {
     let datastore = endpoints_get_lock!(state.datastore);

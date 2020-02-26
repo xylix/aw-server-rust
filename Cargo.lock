@@ -141,6 +141,7 @@ dependencies = [
  "libc",
  "log 0.4.8",
  "multipart",
+ "okapi",
  "rocket",
  "rocket_contrib",
  "rocket_cors",

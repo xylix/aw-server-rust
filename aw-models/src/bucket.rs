@@ -3,10 +3,11 @@ use chrono::Utc;
 use std::collections::HashMap;
 use serde_json::value::Value;
 use serde_json::map::Map;
+use schemars::JsonSchema;
 
 use crate::Event;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, JsonSchema, Clone, Debug)]
 pub struct Bucket {
     #[serde(skip)]
     pub bid: Option<i64>,
@@ -25,7 +26,7 @@ pub struct Bucket {
     pub last_updated: Option<DateTime<Utc>>, // TODO: Should probably be moved into metadata field
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, JsonSchema, Clone, Debug)]
 pub struct BucketMetadata {
     #[serde(default)]
     pub start: Option<DateTime<Utc>>,
@@ -41,7 +42,7 @@ impl Default for BucketMetadata {
     }
 }
 
-#[derive(Clone,Serialize,Deserialize)]
+#[derive(Clone,Serialize,Deserialize, JsonSchema)]
 pub struct BucketsExport {
     pub buckets: HashMap<String, Bucket>,
 }

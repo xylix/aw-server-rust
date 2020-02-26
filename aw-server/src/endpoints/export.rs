@@ -5,11 +5,13 @@ use rocket::http::Header;
 use rocket::response::Response;
 use rocket::http::Status;
 use rocket::State;
+use rocket_okapi::openapi;
 
 use aw_models::BucketsExport;
 
 use crate::endpoints::ServerState;
 
+#[openapi]
 #[get("/")]
 pub fn buckets_export(state: State<ServerState>) -> Result<Response, Status> {
     let datastore = endpoints_get_lock!(state.datastore);

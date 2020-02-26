@@ -2,6 +2,7 @@ use crate::endpoints::ServerState;
 use rocket::http::Status;
 use rocket::State;
 use rocket_contrib::json::Json;
+use rocket_okapi::openapi;
 use std::sync::MutexGuard;
 
 use aw_datastore::{Datastore, DatastoreError};
@@ -16,6 +17,7 @@ fn parse_key(key: String) -> Result<String, Status> {
     }
 }
 
+#[openapi]
 #[post("/", data = "<message>")]
 pub fn setting_set(state: State<ServerState>, message: Json<KeyValue>) -> Result<Status, Status> {
     let data = message.into_inner();
@@ -33,6 +35,7 @@ pub fn setting_set(state: State<ServerState>, message: Json<KeyValue>) -> Result
     };
 }
 
+#[openapi]
 #[get("/")]
 pub fn settings_list_get(state: State<ServerState>) -> Result<Json<Vec<Key>>, Status> {
     let datastore = endpoints_get_lock!(state.datastore);
@@ -52,6 +55,7 @@ pub fn settings_list_get(state: State<ServerState>) -> Result<Json<Vec<Key>>, St
     return Ok(Json(output));
 }
 
+#[openapi]
 #[get("/<key>")]
 pub fn setting_get(state: State<ServerState>, key: String) -> Result<Json<KeyValue>, Status> {
     let setting_key = parse_key(key)?;
@@ -67,6 +71,7 @@ pub fn setting_get(state: State<ServerState>, key: String) -> Result<Json<KeyVal
     };
 }
 
+#[openapi]
 #[delete("/<key>")]
 pub fn setting_delete(state: State<ServerState>, key: String) -> Result<(), Status> {
     let setting_key = parse_key(key)?;
