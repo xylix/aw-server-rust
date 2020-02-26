@@ -1,8 +1,7 @@
 use rocket::State;
 use rocket::http::Status;
 use rocket::response::status;
-use rocket_contrib::json::{Json, JsonValue};
-use rocket_okapi::openapi;
+use rocket_contrib::json::Json;
 
 use aw_models::Query;
 
@@ -19,22 +18,18 @@ struct QueryErrorJson {
 
 /* TODO: Slightly ugly code with ok() and error() */
 
-fn ok(data: Vec<aw_query::DataType>) -> status::Custom<JsonValue> {
-    status::Custom(Status::Ok, json!(data))
+fn ok(data: Vec<aw_query::DataType>) -> status::Custom<Json<Vec<aw_query::DataType>>> {
+    status::Custom(Status::Ok, Json(data))
 }
 
-fn error(err: QueryError) -> status::Custom<JsonValue> {
-    let body = QueryErrorJson {
-        status: 500,
-        reason: "Internal Server Error (Query Error)".to_string(),
-        message: format!("{}", err)
-    };
-    status::Custom(Status::InternalServerError, json!(body))
+enum PossibleQueryErrors {
+    QueryErrorJson,
+    QueryError
 }
 
-#[openapi]
+// TODO: Add openAPI support and the [openapi] macro
 #[post("/", data = "<query_req>")]
-pub fn query(query_req: Json<Query>, state: State<ServerState>) -> status::Custom<JsonValue> {
+pub fn query(query_req: Json<Query>, state: State<ServerState>) -> Result<Json<Vec<aw_query::DataType>>, Status> {
     let query_code = query_req.0.query.join("\n");
     let intervals = &query_req.0.timeperiods;
     let mut results = Vec::new();
@@ -45,22 +40,17 @@ pub fn query(query_req: Json<Query>, state: State<ServerState>) -> status::Custo
             Ok(ds) => ds,
             Err(e) => {
                 warn!("Taking datastore lock failed, returning 500: {}", e);
-                let body = QueryErrorJson {
-                    status: 504,
-                    reason: "Service Unavailable".to_string(),
-                    message: "Taking datastore lock failed, see aw-server logs".to_string()
-                };
-                return status::Custom(Status::ServiceUnavailable, json!(body));
+                return Err(Status::ServiceUnavailable);
             }
         };
         let result = match aw_query::query(&query_code, &interval, &datastore) {
             Ok(data) => data,
             Err(e) => {
                 warn!("Query failed: {:?}", e);
-                return error(e);
+                return Err(Status::NoContent);
             }
         };
         results.push(result);
     }
-    ok(results)
+    Ok(Json(results))
 }

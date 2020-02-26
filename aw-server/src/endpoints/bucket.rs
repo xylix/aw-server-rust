@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::io::Cursor;
 
 use rocket_contrib::json::Json;
 
@@ -11,9 +10,6 @@ use aw_models::BucketsExport;
 use aw_models::Event;
 
 use rocket::State;
-use rocket::response::status;
-use rocket::response::Response;
-use rocket::http::Header;
 use rocket::http::Status;
 use rocket_okapi::openapi;
 
@@ -52,12 +48,9 @@ pub fn bucket_get(bucket_id: String, state: State<ServerState>) -> Result<Json<B
     }
 }
 
-// FIXME: The status::Custom return is used because if we simply used Status and return a
-// Status::NotModified rocket will for some unknown reason consider that to be a
-// "Invalid status used as responder" and converts it to a 500 which we do not want.
 #[openapi]
 #[post("/<bucket_id>", data = "<message>")]
-pub fn bucket_new(bucket_id: String, message: Json<Bucket>, state: State<ServerState>) -> status::Custom<()> {
+pub fn bucket_new(bucket_id: String, message: Json<Bucket>, state: State<ServerState>) -> Result<(), Status> {
     let mut bucket = message.into_inner();
     if bucket.id != bucket_id {
         bucket.id = bucket_id;
@@ -68,17 +61,17 @@ pub fn bucket_new(bucket_id: String, message: Json<Bucket>, state: State<ServerS
         Ok(ds) => ds,
         Err(e) => {
             warn!("Taking datastore lock failed, returning 504: {}", e);
-            return status::Custom(Status::ServiceUnavailable, ());
+            return Err(Status::ServiceUnavailable);
         }
     };
     let ret = datastore.create_bucket(&bucket);
     match ret {
-        Ok(_) => status::Custom(Status::Ok, ()),
+        Ok(_) => Ok(()),
         Err(e) => match e {
-            DatastoreError::BucketAlreadyExists => status::Custom(Status::NotModified, ()),
+            DatastoreError::BucketAlreadyExists => Err(Status::NotModified),
             _ => {
                 warn!("Unexpected error: {:?}", e);
-                status::Custom(Status::InternalServerError, ())
+                Err(Status::InternalServerError)
             }
         }
     }
@@ -194,7 +187,7 @@ pub fn bucket_events_delete_by_id(bucket_id: String, event_id: i64, state: State
 
 #[openapi]
 #[get("/<bucket_id>/export")]
-pub fn bucket_export(bucket_id: String, state: State<ServerState>) -> Result<Response, Status> {
+pub fn bucket_export(bucket_id: String, state: State<ServerState>) -> Result<Json<BucketsExport>, Status> {
     let datastore = endpoints_get_lock!(state.datastore);
     let mut export = BucketsExport {
         buckets: HashMap::new()
@@ -214,12 +207,7 @@ pub fn bucket_export(bucket_id: String, state: State<ServerState>) -> Result<Res
     let filename = format!("aw-bucket-export_{}.json", bucket_id);
 
     let header_content = format!("attachment; filename={}", filename);
-    let response = Response::build()
-        .status(Status::Ok)
-        .header(Header::new("Content-Disposition", header_content))
-        .sized_body(Cursor::new(serde_json::to_string(&export).expect("Failed to serialize")))
-        .finalize();
-    return Ok(response);
+    return Ok(Json(export));
 }
 
 #[openapi]

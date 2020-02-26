@@ -5,6 +5,7 @@ use rocket::http::ContentType;
 use rocket_contrib::json::Json;
 use rocket_okapi::openapi;
 use rocket_okapi::request::OpenApiFromData;
+use rocket_okapi::request::OpenApiFromFormValue;
 
 use multipart::server::Multipart;
 
@@ -40,7 +41,7 @@ pub fn bucket_import_json(state: State<ServerState>, json_data: Json<BucketsExpo
 
 // FIXME: This eats a lot of RAM (double the amount of the size of the file imported)
 // In Rocket 0.5 this will likely be improved when native multipart support is added
-#[openapi]
+// TODO: Add #[openapi] macro, after figuring out a way to support Data type with it
 #[post("/", data = "<data>", format = "multipart/form-data")]
 pub fn bucket_import_form(state: State<ServerState>, cont_type: &ContentType, data: Data) -> Result<(), Status> {
     let (_, boundary) = cont_type.params().find(|&(k, _)| k == "boundary").ok_or_else( || {

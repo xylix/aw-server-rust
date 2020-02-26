@@ -19,7 +19,7 @@ fn parse_key(key: String) -> Result<String, Status> {
 
 #[openapi]
 #[post("/", data = "<message>")]
-pub fn setting_set(state: State<ServerState>, message: Json<KeyValue>) -> Result<Status, Status> {
+pub fn setting_set(state: State<ServerState>, message: Json<KeyValue>) -> Result<(), Status> {
     let data = message.into_inner();
 
     let setting_key = parse_key(data.key)?;
@@ -27,7 +27,7 @@ pub fn setting_set(state: State<ServerState>, message: Json<KeyValue>) -> Result
     let datastore: MutexGuard<'_, Datastore> = endpoints_get_lock!(state.datastore);
     let result = datastore.insert_key_value(&setting_key, &data.value);
     return match result {
-        Ok(_) => Ok(Status::Created),
+        Ok(_) => Ok(()),
         Err(err) => {
             warn!("Unexpected error when creating setting: {:?}", err);
             Err(Status::InternalServerError)

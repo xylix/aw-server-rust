@@ -152,10 +152,12 @@ pub fn build_rocket(server_state: ServerState, config: &AWConfig) -> rocket::Roc
                bucket::bucket_events_delete_by_id,
                bucket::bucket_export
         ])
-        .mount("/api/0/query", routes_with_openapi![
+        // TODO: Change to routes_with_openapi!
+        .mount("/api/0/query", routes![
                query::query
         ])
-        .mount("/api/0/import", routes_with_openapi![
+        // TODO: Change to routes_with_openapi!
+        .mount("/api/0/import", routes![
                import::bucket_import_json,
                import::bucket_import_form
         ])

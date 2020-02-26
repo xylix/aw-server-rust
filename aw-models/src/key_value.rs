@@ -1,11 +1,12 @@
 use chrono::{DateTime, Utc};
+use schemars::JsonSchema;
 
-#[derive(Serialize, Deserialize)]
+#[derive(JsonSchema, Serialize, Deserialize)]
 pub struct Key {
     pub key: String
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, JsonSchema, Clone, Debug, PartialEq)]
 pub struct KeyValue {
     pub key: String,
     pub value: String,
