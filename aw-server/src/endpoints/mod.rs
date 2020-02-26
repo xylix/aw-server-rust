@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 
 use rocket;
-use rocket::response::{NamedFile};
+use rocket::response::content::{Css, Html, JavaScript, Plain};
 use rocket::State;
 use rocket_contrib::json::JsonValue;
 use gethostname::gethostname;
@@ -12,6 +12,7 @@ use uuid::Uuid;
 use crate::dirs;
 use crate::config::AWConfig;
 
+use crate::rocket_okapi::openapi;
 use rocket_okapi::swagger_ui::make_swagger_ui;
 
 #[macro_export]
@@ -43,38 +44,38 @@ pub struct ServerState {
 
 #[openapi]
 #[get("/")]
-fn root_index(state: State<ServerState>) -> Option<NamedFile> {
-    NamedFile::open(state.asset_path.join("index.html")).ok()
+fn root_index(state: State<ServerState>) -> Html<Option<String>> {
+    Html(fs::read_to_string(state.asset_path.join("index.html")).ok())
 }
 
 #[openapi]
 #[get("/css/<file..>")]
-fn root_css(file: PathBuf, state: State<ServerState>) -> Option<NamedFile> {
-    NamedFile::open(state.asset_path.join("css").join(file)).ok()
+fn root_css(file: PathBuf, state: State<ServerState>) -> Css<Option<String>> {
+    Css(fs::read_to_string(state.asset_path.join("css").join(file)).ok())
 }
 
 #[openapi]
 #[get("/fonts/<file..>")]
-fn root_fonts(file: PathBuf, state: State<ServerState>) -> Option<NamedFile> {
-    NamedFile::open(state.asset_path.join("fonts").join(file)).ok()
+fn root_fonts(file: PathBuf, state: State<ServerState>) -> Plain<Option<String>> {
+    Plain(fs::read_to_string(state.asset_path.join("fonts").join(file)).ok())
 }
 
 #[openapi]
 #[get("/js/<file..>")]
-fn root_js(file: PathBuf, state: State<ServerState>) -> Option<NamedFile> {
-    NamedFile::open(state.asset_path.join("js").join(file)).ok()
+fn root_js(file: PathBuf, state: State<ServerState>) -> JavaScript<Option<String>> {
+    JavaScript(fs::read_to_string(state.asset_path.join("js").join(file)).ok())
 }
 
 #[openapi]
 #[get("/static/<file..>")]
-fn root_static(file: PathBuf, state: State<ServerState>) -> Option<NamedFile> {
-    NamedFile::open(state.asset_path.join("static").join(file)).ok()
+fn root_static(file: PathBuf, state: State<ServerState>) -> Plain<Option<String>> {
+    Plain(fs::read_to_string(state.asset_path.join("static").join(file)).ok())
 }
 
 #[openapi]
 #[get("/favicon.ico")]
-fn root_favicon(state: State<ServerState>) -> Option<NamedFile> {
-    NamedFile::open(state.asset_path.join("favicon.ico")).ok()
+fn root_favicon(state: State<ServerState>) -> Plain<Option<String>> {
+    Plain(fs::read_to_string(state.asset_path.join("favicon.ico")).ok())
 }
 
 /// Retrieves the device ID, if none exists it generates one (using UUID v4)

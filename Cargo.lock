@@ -145,7 +145,6 @@ dependencies = [
  "rocket_contrib",
  "rocket_cors",
  "rocket_okapi",
- "schemars",
  "serde",
  "serde_derive",
  "serde_json",
