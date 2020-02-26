@@ -2016,6 +2016,7 @@ version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07569773d6aaf3324812c6572244aec08521b64ce056f2be3b5cc135fb63caec"
 dependencies = [
+ "chrono",
  "schemars_derive",
  "serde",
  "serde_json",

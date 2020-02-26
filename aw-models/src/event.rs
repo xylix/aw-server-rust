@@ -1,7 +1,7 @@
 use serde_json::Value;
 use serde_json::Map;
 use chrono::DateTime;
-use chrono::prelude::Utc;
+use chrono::Utc;
 use chrono::Duration;
 use schemars::JsonSchema;
 
