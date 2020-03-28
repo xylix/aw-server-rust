@@ -3,6 +3,9 @@ use rocket::http::Status;
 use rocket::Data;
 use rocket::State;
 use rocket_contrib::json::Json;
+use rocket_okapi::openapi;
+use rocket_okapi::request::OpenApiFromData;
+use rocket_okapi::request::OpenApiFromFormValue;
 
 use multipart::server::Multipart;
 
@@ -29,6 +32,8 @@ fn import(datastore_mutex: &Mutex<Datastore>, import: BucketsExport) -> Result<(
     Ok(())
 }
 
+
+#[openapi]
 #[post("/", data = "<json_data>", format = "application/json")]
 pub fn bucket_import_json(
     state: State<ServerState>,
@@ -39,6 +44,7 @@ pub fn bucket_import_json(
 
 // FIXME: This eats a lot of RAM (double the amount of the size of the file imported)
 // In Rocket 0.5 this will likely be improved when native multipart support is added
+// TODO: Add #[openapi] macro, after figuring out a way to support Data type with it
 #[post("/", data = "<data>", format = "multipart/form-data")]
 pub fn bucket_import_form(
     state: State<ServerState>,

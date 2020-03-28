@@ -18,8 +18,8 @@ struct QueryErrorJson {
 
 /* TODO: Slightly ugly code with ok() and error() */
 
-fn ok(data: Vec<aw_query::DataType>) -> status::Custom<JsonValue> {
-    status::Custom(Status::Ok, json!(data))
+fn ok(data: Vec<aw_query::DataType>) -> status::Custom<Json<Vec<aw_query::DataType>>> {
+    status::Custom(Status::Ok, Json(data))
 }
 
 fn error(err: QueryError) -> status::Custom<JsonValue> {
@@ -31,8 +31,9 @@ fn error(err: QueryError) -> status::Custom<JsonValue> {
     status::Custom(Status::InternalServerError, json!(body))
 }
 
+// TODO: Add openAPI support and the [openapi] macro
 #[post("/", data = "<query_req>")]
-pub fn query(query_req: Json<Query>, state: State<ServerState>) -> status::Custom<JsonValue> {
+pub fn query(query_req: Json<Query>, state: State<ServerState>) -> Result<Json<Vec<aw_query::DataType>>, Status> {
     let query_code = query_req.0.query.join("\n");
     let intervals = &query_req.0.timeperiods;
     let mut results = Vec::new();
@@ -55,10 +56,10 @@ pub fn query(query_req: Json<Query>, state: State<ServerState>) -> status::Custo
             Ok(data) => data,
             Err(e) => {
                 warn!("Query failed: {:?}", e);
-                return error(e);
+                return Err(Status::NoContent);
             }
         };
         results.push(result);
     }
-    ok(results)
+    Ok(Json(results))
 }

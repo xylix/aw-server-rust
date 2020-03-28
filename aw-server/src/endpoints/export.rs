@@ -1,17 +1,19 @@
 use std::collections::HashMap;
-use std::io::Cursor;
 
 use rocket::http::Header;
 use rocket::http::Status;
 use rocket::response::Response;
 use rocket::State;
+use rocket_contrib::json::Json;
+use rocket_okapi::openapi;
 
-use aw_models::BucketsExport;
+use aw_models::{Bucket, BucketsExport};
 
 use crate::endpoints::ServerState;
 
+#[openapi]
 #[get("/")]
-pub fn buckets_export(state: State<ServerState>) -> Result<Response, Status> {
+pub fn buckets_export(state: State<ServerState>) -> Result<Json<HashMap<String, Bucket>>, Status> {
     let datastore = endpoints_get_lock!(state.datastore);
     let mut export = BucketsExport {
         buckets: HashMap::new(),

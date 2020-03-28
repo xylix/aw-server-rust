@@ -6,7 +6,7 @@ extern crate serde_derive;
 extern crate chrono;
 #[macro_use]
 extern crate log;
-
+extern crate schemars;
 // TODO: Move me to an appropriate place
 #[cfg(test)] // Only macro use for tests
 #[macro_use]
