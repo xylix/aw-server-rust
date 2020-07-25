@@ -8,6 +8,8 @@ extern crate rocket_contrib;
 extern crate multipart;
 extern crate rocket_cors;
 
+extern crate schemars;
+
 extern crate serde;
 extern crate serde_json;
 #[macro_use]

@@ -6,12 +6,16 @@ use rocket::http::Status;
 use rocket::response::Response;
 use rocket::State;
 
-use aw_models::BucketsExport;
+use rocket_contrib::json::Json;
+use rocket_okapi::openapi;
+
+use aw_models::{ BucketsExport };
 
 use crate::endpoints::ServerState;
 
+#[openapi]
 #[get("/")]
-pub fn buckets_export(state: State<ServerState>) -> Result<Response, Status> {
+pub fn buckets_export(state: State<ServerState>) -> Result<BucketsExport, Status> {
     let datastore = endpoints_get_lock!(state.datastore);
     let mut export = BucketsExport {
         buckets: HashMap::new(),
@@ -26,7 +30,7 @@ pub fn buckets_export(state: State<ServerState>) -> Result<Response, Status> {
         export.buckets.insert(bid, bucket);
     }
 
-    Ok(Response::build()
+    let response = Response::build()
         .status(Status::Ok)
         .header(Header::new(
             "Content-Disposition",
@@ -35,5 +39,7 @@ pub fn buckets_export(state: State<ServerState>) -> Result<Response, Status> {
         .sized_body(Cursor::new(
             serde_json::to_string(&export).expect("Failed to serialize"),
         ))
-        .finalize())
+        .finalize();
+    // FIXME: return a type that has the metadata and the BucketsExport
+    return Ok(response);
 }

@@ -1,6 +1,7 @@
 extern crate serde;
 #[cfg_attr(test, macro_use)] // Only macro use for tests
 extern crate serde_json;
+extern crate schemars;
 #[macro_use]
 extern crate serde_derive;
 extern crate chrono;

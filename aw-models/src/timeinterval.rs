@@ -1,12 +1,13 @@
 use std::fmt;
 
+use schemars::JsonSchema;
 use serde::de::{self, Deserialize, Deserializer, Visitor};
 
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, JsonSchema)]
 pub struct TimeInterval {
     start: DateTime<Utc>,
     end: DateTime<Utc>,

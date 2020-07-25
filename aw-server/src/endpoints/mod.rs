@@ -3,9 +3,12 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 
 use gethostname::gethostname;
-use rocket::response::NamedFile;
+use rocket::response::content::{Css, Html, JavaScript, Plain};
 use rocket::State;
 use rocket_contrib::json::JsonValue;
+use rocket_okapi::{ openapi, routes_with_openapi };
+use rocket_okapi::swagger_ui::{ make_swagger_ui, SwaggerUIConfig };
+
 use uuid::Uuid;
 
 use crate::config::AWConfig;
@@ -38,34 +41,40 @@ pub struct ServerState {
     pub asset_path: PathBuf,
 }
 
+#[openapi]
 #[get("/")]
-fn root_index(state: State<ServerState>) -> Option<NamedFile> {
-    NamedFile::open(state.asset_path.join("index.html")).ok()
+fn root_index(state: State<ServerState>) -> Html<Option<String>> {
+    Html(fs::read_to_string(state.asset_path.join("index.html")).ok())
 }
 
+#[openapi]
 #[get("/css/<file..>")]
-fn root_css(file: PathBuf, state: State<ServerState>) -> Option<NamedFile> {
-    NamedFile::open(state.asset_path.join("css").join(file)).ok()
+fn root_css(file: PathBuf, state: State<ServerState>) -> Css<Option<String>> {
+    Css(fs::read_to_string(state.asset_path.join("css").join(file)).ok())
 }
 
+#[openapi]
 #[get("/fonts/<file..>")]
-fn root_fonts(file: PathBuf, state: State<ServerState>) -> Option<NamedFile> {
-    NamedFile::open(state.asset_path.join("fonts").join(file)).ok()
+fn root_fonts(file: PathBuf, state: State<ServerState>) -> Plain<Option<String>> {
+    Plain(fs::read_to_string(state.asset_path.join("fonts").join(file)).ok())
 }
 
+#[openapi]
 #[get("/js/<file..>")]
-fn root_js(file: PathBuf, state: State<ServerState>) -> Option<NamedFile> {
-    NamedFile::open(state.asset_path.join("js").join(file)).ok()
+fn root_js(file: PathBuf, state: State<ServerState>) -> JavaScript<Option<String>> {
+    JavaScript(fs::read_to_string(state.asset_path.join("js").join(file)).ok())
 }
 
+#[openapi]
 #[get("/static/<file..>")]
-fn root_static(file: PathBuf, state: State<ServerState>) -> Option<NamedFile> {
-    NamedFile::open(state.asset_path.join("static").join(file)).ok()
+fn root_static(file: PathBuf, state: State<ServerState>) -> Plain<Option<String>> {
+    Plain(fs::read_to_string(state.asset_path.join("static").join(file)).ok())
 }
 
+#[openapi]
 #[get("/favicon.ico")]
-fn root_favicon(state: State<ServerState>) -> Option<NamedFile> {
-    NamedFile::open(state.asset_path.join("favicon.ico")).ok()
+fn root_favicon(state: State<ServerState>) -> Plain<Option<String>> {
+    Plain(fs::read_to_string(state.asset_path.join("favicon.ico")).ok())
 }
 
 /// Retrieves the device ID, if none exists it generates one (using UUID v4)
@@ -85,6 +94,7 @@ fn get_device_id() -> String {
     }
 }
 
+#[openapi]
 #[get("/")]
 fn server_info(config: State<AWConfig>) -> JsonValue {
     #[allow(clippy::or_fun_call)]
@@ -107,7 +117,7 @@ pub fn build_rocket(server_state: ServerState, config: AWConfig) -> rocket::Rock
     rocket::custom(config.to_rocket_config())
         .mount(
             "/",
-            routes![
+            routes_with_openapi![
                 root_index,
                 root_favicon,
                 root_fonts,
@@ -116,10 +126,11 @@ pub fn build_rocket(server_state: ServerState, config: AWConfig) -> rocket::Rock
                 root_static,
             ],
         )
-        .mount("/api/0/info", routes![server_info])
+        .mount("/swagger-ui", make_swagger_ui(&SwaggerUIConfig { url: "/openapi.json".to_owned(), ..Default::default()}))
+        .mount("/api/0/info", routes_with_openapi![server_info])
         .mount(
             "/api/0/buckets",
-            routes![
+            routes_with_openapi![
                 bucket::bucket_new,
                 bucket::bucket_delete,
                 bucket::buckets_get,
@@ -137,10 +148,10 @@ pub fn build_rocket(server_state: ServerState, config: AWConfig) -> rocket::Rock
             "/api/0/import",
             routes![import::bucket_import_json, import::bucket_import_form],
         )
-        .mount("/api/0/export", routes![export::buckets_export])
+        .mount("/api/0/export", routes_with_openapi![export::buckets_export])
         .mount(
             "/api/0/settings",
-            routes![
+            routes_with_openapi![
                 settings::setting_get,
                 settings::settings_list_get,
                 settings::setting_set,

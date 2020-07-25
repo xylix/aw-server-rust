@@ -17,7 +17,10 @@ path = "src/main.rs"
 rocket = "0.4"
 rocket_contrib = { version = "*", default-features = false, features = ["json"] }
 rocket_cors = "0.5"
+rocket_okapi = "0.5.1"
+okapi = { version="0.4.0", features = ["derive_json_schema"] }
 multipart = { version = "0.17", default-features = false, features = ["server"] }
+schemars = { version = "0.7.6", features = ["chrono"] }
 serde = "1.0"
 serde_json = "1.0"
 serde_derive = "1.0"
